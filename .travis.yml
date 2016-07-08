@@ -1,34 +1,50 @@
-cache:
-  directories:
-  - projects/com.oracle.truffle.llvm.tools/tools
-  - graal-jvmci-8
 sudo: required
+dist: trusty
 language: java
 python:
-  - "2.7"
+  - '2.7'
 jdk:
-  - openjdk-8-jdk
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get install -y openjdk-8-jdk
+  - openjdk8
+env:
+  - JVMCI_VERSION=0.17
 install:
-  - git clone https://github.com/graalvm/mx
-#  - wget -O mx/ecj.jar 'http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/R-4.5.1-201509040015/ecj-4.5.1.jar'
-#  - export JDT=`pwd`/mx/ecj.jar
-#  - wget http://lafo.ssw.uni-linz.ac.at/sulong-deps/eclipse-jdk8-linux-x86_64.tar.gz
-#  - tar -xvzf eclipse-jdk8-linux-x86_64.tar.gz
-#  - export ECLIPSE_EXE=eclipse/eclipse
-  - export DEFAULT_VM=server
-  - export PATH=`pwd`/mx:$PATH
-  - if [ -d graal-jvmci-8/.hg ]; then cd graal-jvmci-8 && hg pull && hg update && cd ..; else hg clone http://hg.openjdk.java.net/graal/graal-jvmci-8; fi;
-  - cd graal-jvmci-8
-  - mx --java-home $JAVA_HOME build
-  - export JAVA_HOME=$(mx jdkhome)
-  - cd ..
+  - sudo add-apt-repository ppa:openjdk-r/ppa -y
+  - sudo apt-get -qq update
+  - sudo apt-cache search openjdk
+  - sudo apt-get install -y openjdk-8-jdk openjdk-8-source openjdk-8-doc
 script:
+  - which java
+  - java -version
+  - git clone https://github.com/graalvm/mx
+  - export PATH=`pwd`/mx:$PATH
+  - export JVMCI_VERSION="0.17"
+  - hg clone http://hg.openjdk.java.net/graal/graal-jvmci-8
+  - hg -R graal-jvmci-8 update jvmci-${JVMCI_VERSION}
+  - mkdir -p graal-jvmci-8/jdk1.8.0_91
+  # Do the JDK copying here to handle symlinks
+  - cp -rL ${JAVA_HOME} graal-jvmci-8/jdk1.8.0_91/product
+#  - mx --primary-suite graal-jvmci-8 --vm=server build -DFULL_DEBUG_SYMBOLS=0
+#  - mx --primary-suite graal-jvmci-8 --vm=server -v vm -version
+#  - mx --primary-suite graal-jvmci-8 --vm=server -v unittest
+  - export JAVA_HOME=$(mx --primary-suite graal-jvmci-8 jdkhome)
   - $JAVA_HOME/bin/java -version
-branches:
-  only:
-    - master
 after_failure:
   - find . -iname "*.log" -print0 | xargs -0 cat
+after_success:
+  - export PREFIX="$(basename $(dirname ${JAVA_HOME}))-jvmci-${JVMCI_VERSION}"
+  - export CI_ARCH="amd64"
+  - export CI_OS=${TRAVIS_OS_NAME}
+  - if [ "{CI_OS}" = "osx"]; then export CI_OS="darwin"; fi
+  - ARCHIVE="${PREFIX}-${CI_OS}-${CI_ARCH}.tar.gz"
+  - python archive.py ${PREFIX} ${ARCHIVE} ${JAVA_HOME}
+  - ls -l
+deploy:
+  provider: releases
+  api_key:
+    secure: Sz53hEQspb5PdroCmSe6WhqjFPGJmnJ6GwCuZlIB8rk+5rTVCd+zCopPh6UmxCTWEUfpUJRyDGmqbhwwHGfmm8r4hHrmUXkL8SzO1SEm8QWTiWerkNkk+/YyCylZGWRvDmyOOaS04HsrVAPIYKKyxUlKDIGKXlD4adtBpXWpOywgDv6nqPUREnzhDg4Xbff5L6jDaTCLxVHgY5HCIwxaiQEChpnGmvgJ1ZoeRpMjd/TPM+sU03Qa6aAPpL1GY1liGZkTPIWExznIPmjGHQbDXJ3NB173c+LRyzlmN5xE462U0Kwm0yT62k/OX8hyOIBoF6st9cvMxf6k8Xy5tP+o1/z9112ZnXe2d2F7bRqOiGaOm//+OJBGUChNuBH8fvHbQ58lWSfCbNEu3QibwJ+DihZhk9v3CpTqmu+gt92npTOmC7zqE8su4Blw1WkUaQ2pxGM5sk/xxaA/b73agB4Rc1aAXN+gsN+sr8Q0IMmDoiMyQLwOY5zTyBF8dpZ1SPLbhB4NeywY1K1VUpkkYKp3wTUtSgoTYEYzV05BJ13+21s0RSIgzMnSrpIPZEgRL46EWvWD0tLimh0irHEhuCJomYY0lGKGlwPRO3ABqFfsFIb+GRgrbBLzkKQ6CpC7JYo7jwfnms24qONP1DHb7V1ErYR79p7hi2Dp9yd8sX/P2ZQ=
+  file:
+     - ${ARCHIVE}
+     - ${ARCHIVE}.sha1
+  skip_cleanup: true
+  on:
+    repo: dougxc/openjdk8-jvmci-builder
