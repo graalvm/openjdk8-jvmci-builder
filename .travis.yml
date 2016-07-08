@@ -8,11 +8,16 @@ jdk:
 env:
   - JVMCI_VERSION=0.17
 script:
-  - if [ "${TRAVIS_BRANCH}" == "master" ]; then ./build.sh; fi
+  - env | sort
+  # Only run build for a pull request or when pushing a tagged commit to master
+  - if [ "${TRAVIS_PULL_REQUEST}" != "false" -o "${TRAVIS_BRANCH}" == "${TRAVIS_TAG}" ]; then ./build.sh; fi
 after_failure:
   - find . -iname "*.log" -print0 | xargs -0 cat
 
 # See https://docs.travis-ci.com/user/deployment/releases
+before_deploy:
+  - echo "ARCHIVE=${ARCHIVE}"
+  - export ARCHIVE=`ls *.tar.gz`
 deploy:
   provider: releases
   api_key:
