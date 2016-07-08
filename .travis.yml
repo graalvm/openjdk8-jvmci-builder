@@ -1,0 +1,34 @@
+cache:
+  directories:
+  - projects/com.oracle.truffle.llvm.tools/tools
+  - graal-jvmci-8
+sudo: required
+language: java
+python:
+  - "2.7"
+jdk:
+  - openjdk-8-jdk
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y openjdk-8-jdk
+install:
+  - git clone https://github.com/graalvm/mx
+#  - wget -O mx/ecj.jar 'http://www.eclipse.org/downloads/download.php?file=/eclipse/downloads/drops4/R-4.5.1-201509040015/ecj-4.5.1.jar'
+#  - export JDT=`pwd`/mx/ecj.jar
+#  - wget http://lafo.ssw.uni-linz.ac.at/sulong-deps/eclipse-jdk8-linux-x86_64.tar.gz
+#  - tar -xvzf eclipse-jdk8-linux-x86_64.tar.gz
+#  - export ECLIPSE_EXE=eclipse/eclipse
+  - export DEFAULT_VM=server
+  - export PATH=`pwd`/mx:$PATH
+  - if [ -d graal-jvmci-8/.hg ]; then cd graal-jvmci-8 && hg pull && hg update && cd ..; else hg clone http://hg.openjdk.java.net/graal/graal-jvmci-8; fi;
+  - cd graal-jvmci-8
+  - mx --java-home $JAVA_HOME build
+  - export JAVA_HOME=$(mx jdkhome)
+  - cd ..
+script:
+  - $JAVA_HOME/bin/java -version
+branches:
+  only:
+    - master
+after_failure:
+  - find . -iname "*.log" -print0 | xargs -0 cat
