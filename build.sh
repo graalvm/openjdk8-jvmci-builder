@@ -14,11 +14,6 @@ export PATH=$PATH:`pwd`/mx
 # Get graal-jvmci-8
 hg clone http://hg.openjdk.java.net/graal/graal-jvmci-8
 hg -R graal-jvmci-8 update jvmci-${JVMCI_VERSION}
-mkdir -p graal-jvmci-8/jdk1.8.0_91
-
-# Do the JDK copying here to handle symlinks (which the
-# openjdk-8-jdk package uses extensively).
-cp -rL ${JAVA_HOME} graal-jvmci-8/jdk1.8.0_91/product
 
 # Build the VM, install and test it
 mx --primary-suite graal-jvmci-8 --vm=server build -DFULL_DEBUG_SYMBOLS=0
