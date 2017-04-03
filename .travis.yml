@@ -3,14 +3,20 @@ dist: trusty
 language: java
 python:
   - '2.7'
-jdk:
-  - openjdk8
+#jdk:
+#  - openjdk8
 env:
-  - JVMCI_VERSION=0.24
+  - JVMCI_VERSION=0.25
 script:
   - env | sort
   # Only run build for a pull request or when pushing a tagged commit to master
   - if [ "${TRAVIS_PULL_REQUEST}" != "false" -o "${TRAVIS_BRANCH}" == "${TRAVIS_TAG}" ]; then ./build.sh; fi
+before_install:
+  #- sudo add-apt-repository ppa:openjdk-r/ppa -y
+  #- sudo apt-get update -q
+  #- sudo apt-get install openjdk-8-jdk -y
+  - wget http://launchpadlibrarian.net/303566948/openjdk-8-jdk_8u121-b13-0ubuntu1.16.10.2_amd64.deb
+  - sudo dpkg -i openjdk-8-jdk_8u121-b13-0ubuntu1.16.10.2_amd64.deb
 after_failure:
   - find . -iname "*.log" -print0 | xargs -0 cat
 
