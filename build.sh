@@ -7,6 +7,9 @@ sudo apt-get -qq update
 sudo apt-cache search openjdk
 sudo apt-get install -y openjdk-8-jdk openjdk-8-source openjdk-8-doc
 
+which java
+java -version
+
 # Get mx
 git clone https://github.com/graalvm/mx
 export PATH=$PATH:`pwd`/mx
