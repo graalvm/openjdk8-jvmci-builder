@@ -11,12 +11,12 @@ which java
 java -version
 
 # Get mx
-git clone https://github.com/graalvm/mx
+git clone https://github.com/graalvm/mx.git
 export PATH=$PATH:`pwd`/mx
 
 # Get graal-jvmci-8
-hg clone http://hg.openjdk.java.net/graal/graal-jvmci-8
-hg -R graal-jvmci-8 update jvmci-${JVMCI_VERSION}
+git clone https://github.com/graalvm/graal-jvmci-8.git
+git -C graal-jvmci-8 checkout jvmci-${JVMCI_VERSION}
 
 # Build the VM, install and test it
 mx --primary-suite graal-jvmci-8 --vm=server build -DFULL_DEBUG_SYMBOLS=0
