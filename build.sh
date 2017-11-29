@@ -25,7 +25,7 @@ mx --primary-suite graal-jvmci-8 --vm=server -v unittest
 
 # Build tar.gz archive
 export JVMCI_JDK_HOME=$(mx --primary-suite graal-jvmci-8 jdkhome)
-export PREFIX="$(basename $(dirname ${JVMCI_JDK_HOME}))-jvmci-${JVMCI_VERSION}"
+export PREFIX="$(basename $(dirname $(dirname ${JVMCI_JDK_HOME})))-jvmci-${JVMCI_VERSION}"
 export CI_ARCH="amd64"
 export CI_OS=${TRAVIS_OS_NAME}
 if [ "${CI_OS}" != "linux" ]; then echo "Unsupported OS: ${CI_OS}"; exit 1; fi
