@@ -1,3 +1,5 @@
 The repository hosts OpenJDK8 binaries that include [JVMCI](https://github.com/graalvm/graal-jvmci-8).
 
-Current release: [jvmci-19.3-b07](https://github.com/graalvm/openjdk8-jvmci-builder/releases/tag/jvmci-19.3-b07)
+## Current releases
+* [jvmci-19.3-b07](https://github.com/graalvm/openjdk8-jvmci-builder/releases/tag/jvmci-19.3-b07)
+* [jvmci-20.0-b01](https://github.com/graalvm/openjdk8-jvmci-builder/releases/tag/jvmci-20.0-b01)
